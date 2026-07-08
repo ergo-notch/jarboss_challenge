@@ -1,5 +1,6 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 
+import '../api_logger.dart';
 import '../graphql_exception.dart';
 
 abstract class GraphQLService {
@@ -16,18 +17,26 @@ abstract class GraphQLService {
 
 class GraphQLServiceImpl implements GraphQLService {
   final GraphQLClient client;
+  final ApiLogger logger;
 
-  GraphQLServiceImpl({required this.client});
+  GraphQLServiceImpl({
+    required this.client,
+    ApiLogger? logger,
+  }) : logger = logger ?? const ApiLogger();
 
   @override
   Future<Map<String, dynamic>> query(
     String document, {
     Map<String, dynamic>? variables,
   }) async {
-    final result = await client.query(
-      QueryOptions(document: gql(document), variables: variables ?? {}),
+    return _execute(
+      operation: 'QUERY',
+      document: document,
+      variables: variables,
+      execute: () => client.query(
+        QueryOptions(document: gql(document), variables: variables ?? {}),
+      ),
     );
-    return _handleResult(result);
   }
 
   @override
@@ -35,10 +44,61 @@ class GraphQLServiceImpl implements GraphQLService {
     String document, {
     Map<String, dynamic>? variables,
   }) async {
-    final result = await client.mutate(
-      MutationOptions(document: gql(document), variables: variables ?? {}),
+    return _execute(
+      operation: 'MUTATION',
+      document: document,
+      variables: variables,
+      execute: () => client.mutate(
+        MutationOptions(document: gql(document), variables: variables ?? {}),
+      ),
     );
-    return _handleResult(result);
+  }
+
+  Future<Map<String, dynamic>> _execute({
+    required String operation,
+    required String document,
+    required Map<String, dynamic>? variables,
+    required Future<QueryResult> Function() execute,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+
+    logger.request(
+      operation: operation,
+      document: document,
+      variables: variables,
+    );
+
+    try {
+      final result = await execute();
+      final data = _handleResult(result);
+      stopwatch.stop();
+
+      logger.success(
+        operation: operation,
+        duration: stopwatch.elapsed,
+        data: data,
+      );
+
+      return data;
+    } on GraphQLErrorException catch (error, stackTrace) {
+      stopwatch.stop();
+      logger.failure(
+        operation: operation,
+        duration: stopwatch.elapsed,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    } catch (error, stackTrace) {
+      stopwatch.stop();
+      logger.failure(
+        operation: operation,
+        duration: stopwatch.elapsed,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   Map<String, dynamic> _handleResult(QueryResult result) {
