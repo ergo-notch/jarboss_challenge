@@ -30,7 +30,10 @@ class AddCharactersByPageUseCase
         ),
       );
     } else {
-      final response = await repository.getCharacters(page: params.page);
+      final response = await repository.getCharacters(
+        page: params.page,
+        name: params.name,
+      );
       return response.fold((error) => Left(error), (success) {
         List<CharacterEntity> results = [
           ...params.characters,
@@ -55,11 +58,13 @@ class AddCharactersByPageUseCaseParams {
   final num page;
   final List<CharacterEntity> characters;
   final bool isLastPage;
+  final String? name;
 
   AddCharactersByPageUseCaseParams({
     this.page = 1,
     this.characters = const [],
     this.isLastPage = false,
+    this.name,
   });
 }
 

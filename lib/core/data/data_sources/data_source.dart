@@ -7,7 +7,10 @@ final dataSourceProvider = Provider<IDataSource>(
 );
 
 abstract class IDataSource {
-  Future<CharactersListModel> getCharacters({num page = 1});
+  Future<CharactersListModel> getCharacters({
+    num page = 1,
+    String? name,
+  });
   Future<DetailsModel> getCharacterDetails({String? characterId});
 }
 
@@ -17,25 +20,35 @@ class DataSourceImpl implements IDataSource {
   DataSourceImpl({required this.client});
 
   @override
-  Future<CharactersListModel> getCharacters({num page = 1}) async {
+  Future<CharactersListModel> getCharacters({
+    num page = 1,
+    String? name,
+  }) async {
     try {
-      final result = await client.query('''
-                    query {
-                      characters(page: $page) {
-                            info{
-                                  count
-                                  next
-                                  prev
-                            }
-                            results{
-                                  id
-                                  name
-                                  status
-                                  species
-                                  image
-                              }
-                            }
-                      }''');
+      final hasNameFilter = name != null && name.isNotEmpty;
+      final result = await client.query(
+        '''
+        query GetCharacters(\$page: Int!, \$filter: FilterCharacter) {
+          characters(page: \$page, filter: \$filter) {
+            info {
+              count
+              next
+              prev
+            }
+            results {
+              id
+              name
+              status
+              species
+              image
+            }
+          }
+        }''',
+        variables: {
+          'page': page,
+          'filter': hasNameFilter ? {'name': name} : null,
+        },
+      );
 
       return CharactersListModel.fromJson(result);
     } on GraphQLErrorException catch (_) {

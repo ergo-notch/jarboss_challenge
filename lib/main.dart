@@ -11,14 +11,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    const seedColor = Color(0xFF5C6BC0);
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: seedColor,
+      brightness: Brightness.light,
+    );
+
     return ProviderScope(
       child: MaterialApp.router(
         theme: ThemeData(
-          scaffoldBackgroundColor: Colors.lightGreenAccent,
-          appBarTheme: AppBarTheme(color: Colors.deepPurple),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
-            primary: Colors.lightGreenAccent,
+          useMaterial3: true,
+          colorScheme: colorScheme,
+          scaffoldBackgroundColor: colorScheme.surfaceContainerLowest,
+          appBarTheme: const AppBarTheme(
+            centerTitle: false,
+            elevation: 0,
+            scrolledUnderElevation: 1,
           ),
         ),
         routerConfig: router,
