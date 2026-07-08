@@ -28,6 +28,7 @@ class CharacterTile extends StatelessWidget {
           shadowColor: Colors.deepPurple,
           child: Stack(
             children: [
+              
               Hero(
                 tag: character?.id ?? '',
                 transitionOnUserGestures: true,
@@ -44,27 +45,45 @@ class CharacterTile extends StatelessWidget {
                       return const Center(child: CircularProgressIndicator());
                     },
                     errorBuilder: (context, error, stackTrace) {
-                      return const Center(child: Icon(Icons.error));
+                      return const Center(child: Icon(Icons.broken_image));
                     },
                   ),
                 ),
               ),
-              Positioned(
-                child: Container(
+              Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Colors.black.withOpacity(0.25),
+                  gradient: LinearGradient(
+                    colors: [
+                      (character?.status == CharacterStatus.dead
+                              ? Colors.red
+                              : character?.status == CharacterStatus.alive
+                              ? Colors.green
+                              : Colors.white)
+                          .withValues(alpha: 0.8),
+                      (character?.status == CharacterStatus.dead
+                              ? Colors.red
+                              : character?.status == CharacterStatus.alive
+                              ? Colors.green
+                              : Colors.white)
+                          .withValues(alpha: 0.4),
+                      Colors.black.withValues(alpha: 0.8),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    tileMode: TileMode.clamp,
                   ),
-                  child: Center(
+                ),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
                     child: Text(
-                      '${character?.name ?? ''}${character?.status == CharacterStatus.dead ? '\n(Dead)' : ''}',
+                    character?.name ?? '',
                       style: const TextStyle(
-                        color: Colors.yellowAccent,
-                        fontSize: 14,
+                      color: Colors.white,
+                      fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),

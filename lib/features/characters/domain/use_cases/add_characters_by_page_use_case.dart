@@ -35,10 +35,10 @@ class AddCharactersByPageUseCase
         name: params.name,
       );
       return response.fold((error) => Left(error), (success) {
-        List<CharacterEntity> results = [
+        List<CharacterEntity> results = List.unmodifiable([
           ...params.characters,
           ...success.results ?? [],
-        ];
+        ]);
         return Right(
           AddCharactersByPageUseCaseResult(
             isLastPage: results.length >= (success.count ?? 0),

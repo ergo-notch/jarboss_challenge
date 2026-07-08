@@ -76,13 +76,10 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
                 scrolledUnderElevation: 1,
                 backgroundColor: colorScheme.surfaceContainerLow,
                 surfaceTintColor: colorScheme.surfaceTint,
-                title: Text(
-                  'Personajes',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
+                actions: [
+                  Text('Light Theme'),
+                  Switch(value: true, onChanged: (value) {}),
+                ],
                 bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(72),
                   child: Padding(
@@ -135,7 +132,10 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
           final character = state.characters[index];
           return CharacterTile(
             onSelectCharacter: (character) {
-              context.go('/characters/character/${character?.id}');
+              context.go(
+                '/characters/character/${character?.id}',
+                extra: character,
+              );
             },
             character: character,
           );

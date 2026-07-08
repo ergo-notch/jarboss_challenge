@@ -22,7 +22,11 @@ final router = GoRouter(
           name: 'characterDetail',
           builder: (context, state) {
             final id = state.pathParameters['id'];
-            return CharacterDetailsPage(characterId: id ?? '');
+            final character = state.extra as CharacterEntity?;
+            return CharacterDetailsPage(
+              characterId: id ?? '',
+              character: character,
+            );
           },
         ),
       ],

@@ -1,6 +1,11 @@
-import 'package:jarboss_challenge/core/core.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
-class CharactersListEntity {
+import 'package:jarboss_challenge/features/characters/data/models/characters_list_model.dart';
+import 'package:jarboss_challenge/features/characters/domain/entities/character_entity.dart';
+
+@immutable
+class CharactersListEntity extends Equatable {
   final num? count;
   final num? next;
   final num? prev;
@@ -13,8 +18,13 @@ class CharactersListEntity {
         count: model.count,
         next: model.next,
         prev: model.prev,
-        results: model.results
-            ?.map((x) => CharacterEntity.fromModel(x))
-            .toList(),
+        results: model.results == null
+            ? null
+            : List.unmodifiable(
+                model.results!.map(CharacterEntity.fromModel),
+              ),
       );
+
+  @override
+  List<Object?> get props => [count, next, prev, results];
 }

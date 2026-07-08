@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jarboss_challenge/core/core.dart';
 import 'package:jarboss_challenge/features/details/presentation/widgets/episodes_list_widget.dart';
 
@@ -9,8 +10,13 @@ class CharacterDetailsPage extends ConsumerStatefulWidget {
   static const String name = '/character-details';
 
   final String characterId;
+  final CharacterEntity? character;
 
-  const CharacterDetailsPage({super.key, required this.characterId});
+  const CharacterDetailsPage({
+    super.key,
+    required this.characterId,
+    this.character,
+  });
 
   @override
   ConsumerState<CharacterDetailsPage> createState() =>
@@ -30,155 +36,217 @@ class CharacterDetailsPageState extends ConsumerState<CharacterDetailsPage> {
         .getCharacterDetails(characterId: widget.characterId);
   }
 
+  String? get _imageUrl =>
+      widget.character?.imageUrl ??
+      ref.watch(detailsViewModelProvider).details?.imageUrl;
+
+  String get _displayName =>
+      ref.watch(detailsViewModelProvider).details?.name ??
+      widget.character?.name ??
+      '';
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(detailsViewModelProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Stack(
-      children: [
-        Scaffold(
-          appBar: AppBar(
-            toolbarHeight: 100,
-            centerTitle: true,
-            leading: InkWell(
-              onTap: () => Navigator.pop(context),
-              child: Icon(
-                Icons.arrow_back,
-                color: Colors.yellowAccent,
-                size: 40,
-              ),
+    return Scaffold(
+      backgroundColor: colorScheme.surfaceContainerLowest,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 320,
+            pinned: true,
+            stretch: true,
+            backgroundColor: colorScheme.surfaceContainerLow,
+            leading: IconButton(
+              iconSize: 40,
+              icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
+              onPressed: () => context.pop(),
             ),
-            title: Text(
-              maxLines: 2,
-              state.status == FetchStatus.success
-                  ? state.details?.name ?? ''
-                  : 'Loading...',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.yellowAccent,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+            flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [
+                StretchMode.zoomBackground,
+                StretchMode.blurBackground,
+              ],
+              title: Text(
+                _displayName,
+                maxLines: 2,
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: colorScheme.onPrimary,
+                  fontWeight: FontWeight.w600,
+                  shadows: const [Shadow(blurRadius: 8, color: Colors.black54)],
+                ),
+              ),
+              background: _CharacterHeaderImage(
+                heroTag: widget.characterId,
+                imageUrl: _imageUrl,
+                status: state.details?.status,
               ),
             ),
           ),
-          body: state.status == FetchStatus.error
-              ? RetryWidget(
-                  errorMessage: 'Try again',
-                  onRetry: () => loadCharacterDetails(),
-                )
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Row(
-                        spacing: 16,
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 350,
-                              child: Card(
-                                surfaceTintColor: Colors.transparent,
-                                color: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  side: const BorderSide(
-                                    color: Colors.deepPurple,
-                                    width: 2,
-                                  ),
-                                ),
-                                elevation: 4,
-                                shadowColor: Colors.deepPurple,
-                                child: Hero(
-                                  tag: widget.characterId,
-                                  transitionOnUserGestures: true,
-
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.network(
-                                      height: double.infinity,
-                                      width: double.infinity,
-                                      state.details?.imageUrl ?? '',
-                                      fit: BoxFit.cover,
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                            if (loadingProgress == null)
-                                              return child;
-                                            return const Center(
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            );
-                                          },
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return const Center(
-                                              child: Icon(Icons.error),
-                                            );
-                                          },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Origin: ${state.details?.origin ?? ''}',
-                                  style: const TextStyle(
-                                    color: Colors.deepPurple,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'Location: ${state.details?.location ?? ''}',
-                                  style: const TextStyle(
-                                    color: Colors.deepPurple,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'Status: ${state.details?.status ?? ''}',
-                                  style: const TextStyle(
-                                    color: Colors.deepPurple,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'Species: ${state.details?.species ?? ''}',
-                                  style: const TextStyle(
-                                    color: Colors.deepPurple,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
+          if (state.status == FetchStatus.fetching && state.details == null)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (state.status == FetchStatus.error && state.details == null)
+            SliverFillRemaining(
+              child: RetryWidget(
+                errorMessage: 'Error al cargar el personaje',
+                onRetry: loadCharacterDetails,
+              ),
+            )
+          else
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _DetailRow(
+                      label: 'Estado',
+                      value: (state.details?.status?.value ?? '').toUpperCase(),
+                      color: state.details?.status == CharacterStatus.dead
+                          ? Colors.red
+                          : state.details?.status == CharacterStatus.alive
+                          ? Colors.green
+                          : Colors.black,
+                    ),
+                    _DetailRow(
+                      label: 'Especie',
+                      value: state.details?.species ?? '',
+                    ),
+                    _DetailRow(label: 'Tipo', value: state.details?.type ?? ''),
+                    _DetailRow(
+                      label: 'Origen',
+                      value: state.details?.origin ?? '',
+                    ),
+                    _DetailRow(
+                      label: 'Ubicación',
+                      value: state.details?.location ?? '',
+                    ),
+                    if (state.details?.episodes != null) ...[
                       const SizedBox(height: 16),
+                      Text(
+                        'Episodios (${state.details!.episodes!.length})',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
                       EpisodesListWidget(
                         episodes: state.details?.episodes ?? [],
                       ),
                     ],
-                  ),
+                  ],
                 ),
-        ),
-        if (state.status == FetchStatus.fetching)
-          Container(
-            color: Colors.black.withOpacity(0.5),
-            height: double.infinity,
-            width: double.infinity,
-            child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CharacterHeaderImage extends StatelessWidget {
+  final String heroTag;
+  final String? imageUrl;
+  final CharacterStatus? status;
+
+  const _CharacterHeaderImage({
+    required this.heroTag,
+    this.imageUrl,
+    this.status,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Hero(
+      tag: heroTag,
+      transitionOnUserGestures: true,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (imageUrl != null && imageUrl!.isNotEmpty)
+            Image.network(
+              imageUrl!,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return const Center(child: CircularProgressIndicator());
+              },
+              errorBuilder: (context, error, stackTrace) =>
+                  const ColoredBox(color: Colors.black12),
+            )
+          else
+            const ColoredBox(color: Colors.black12),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  (status == CharacterStatus.dead
+                          ? Colors.red
+                          : status == CharacterStatus.alive
+                          ? Colors.green
+                          : Colors.white)
+                      .withValues(alpha: 0.8),
+                  (status == CharacterStatus.dead
+                          ? Colors.red
+                          : status == CharacterStatus.alive
+                          ? Colors.green
+                          : Colors.white)
+                      .withValues(alpha: 0.4),
+                  Colors.black.withValues(alpha: 0.8),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                tileMode: TileMode.clamp,
+              ),
+            ),
           ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _DetailRow({
+    required this.label,
+    required this.value,
+    this.color = Colors.black,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (value.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              fontWeight: FontWeight.normal,
+              color: Colors.black,
+              fontSize: 18,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: color,
+              fontSize: 18,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

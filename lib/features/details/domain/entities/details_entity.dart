@@ -1,8 +1,12 @@
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:jarboss_challenge/features/details/data/models/details_model.dart';
 
 import '../../../../core/core.dart';
 
-class DetailsEntity {
+@immutable
+class DetailsEntity extends Equatable {
   final String? id;
   final String? name;
   final CharacterStatus? status;
@@ -35,19 +39,34 @@ class DetailsEntity {
       origin: model.origin,
       location: model.location,
       imageUrl: model.image,
-      episodes: model.episodes
-          ?.map((x) => '${x.episode ?? ''} - ${x.name}')
-          .toList(),
+      episodes: model.episodes == null
+          ? null
+          : List.unmodifiable(
+              model.episodes!.map(
+                (episode) => '${episode.episode ?? ''} - ${episode.name}',
+              ),
+            ),
     );
   }
 
   static CharacterStatus? _mapStatus(String? status) {
-    if (status?.toLowerCase() == 'alive') {
-      return CharacterStatus.alive;
-    } else if (status?.toLowerCase() == 'dead') {
-      return CharacterStatus.dead;
-    } else {
-      return CharacterStatus.unknown;
-    }
+    return switch (status?.toLowerCase()) {
+      'alive' => CharacterStatus.alive,
+      'dead' => CharacterStatus.dead,
+      _ => CharacterStatus.unknown,
+    };
   }
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    status,
+    species,
+    type,
+    origin,
+    location,
+    imageUrl,
+    episodes,
+  ];
 }

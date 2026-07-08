@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:jarboss_challenge/core/core.dart';
 
+@immutable
 class CharactersState extends Equatable {
   final FetchStatus status;
   final String? errorMessage;
@@ -37,7 +39,9 @@ class CharactersState extends Equatable {
       errorMessage: errorMessage,
       nextPage: nextPage ?? this.nextPage,
       totalResults: totalResults ?? this.totalResults,
-      characters: characters ?? this.characters,
+      characters: characters != null
+          ? List.unmodifiable(characters)
+          : this.characters,
       isLastPage: isLastPage ?? this.isLastPage,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       searchQuery: searchQuery ?? this.searchQuery,

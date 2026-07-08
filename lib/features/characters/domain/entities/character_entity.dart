@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:jarboss_challenge/features/characters/data/models/character_model.dart';
 
 enum CharacterStatus {
@@ -10,12 +12,11 @@ enum CharacterStatus {
   const CharacterStatus(this.value);
 
   @override
-  String toString() {
-    return value;
-  }
+  String toString() => value;
 }
 
-class CharacterEntity {
+@immutable
+class CharacterEntity extends Equatable {
   final String? id;
   final String? name;
   final CharacterStatus? status;
@@ -33,12 +34,13 @@ class CharacterEntity {
   }
 
   static CharacterStatus? _mapStatus(String? status) {
-    if (status?.toLowerCase() == 'alive') {
-      return CharacterStatus.alive;
-    } else if (status?.toLowerCase() == 'dead') {
-      return CharacterStatus.dead;
-    } else {
-      return CharacterStatus.unknown;
-    }
+    return switch (status?.toLowerCase()) {
+      'alive' => CharacterStatus.alive,
+      'dead' => CharacterStatus.dead,
+      _ => CharacterStatus.unknown,
+    };
   }
+
+  @override
+  List<Object?> get props => [id, name, status, imageUrl];
 }
