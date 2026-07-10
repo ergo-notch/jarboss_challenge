@@ -23,13 +23,12 @@ class CharactersPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PaginatedListPage<CharacterEntity>(
+    return PaginatedListPage<CharacterEntity, CharactersListNotifier>(
       listProvider: charactersViewModelProvider,
       title: 'Personajes',
       searchHintText: 'Buscar por nombre...',
-      filterBuilder: (context, state, _) {
+      filterBuilder: (context, state, charactersViewModel) {
         final colorScheme = Theme.of(context).colorScheme;
-        final charactersViewModel = ref.read(charactersViewModelProvider.notifier);
 
         return DropdownButton<CharacterStatus?>(
           iconEnabledColor: colorScheme.onSurface,

@@ -9,11 +9,12 @@ final addLocationsByPageUseCaseProvider =
     );
 
 final locationsViewModelProvider =
-    StateNotifierProvider<
-      PaginatedListViewModel<LocationEntity>,
-      PaginatedListState<LocationEntity>
-    >(
-      (ref) => PaginatedListViewModel<LocationEntity>(
-        useCase: ref.read(addLocationsByPageUseCaseProvider),
-      ),
+    NotifierProvider<LocationsListNotifier, PaginatedListState<LocationEntity>>(
+      LocationsListNotifier.new,
     );
+
+class LocationsListNotifier extends PaginatedListNotifier<LocationEntity> {
+  @override
+  AddPaginatedItemsByPageUseCase<LocationEntity> get useCase =>
+      ref.read(addLocationsByPageUseCaseProvider);
+}

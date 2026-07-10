@@ -33,17 +33,14 @@ final addCharactersByPageUseCaseProvider =
     );
 
 final charactersViewModelProvider =
-    StateNotifierProvider<
-      CharactersViewModel,
-      PaginatedListState<CharacterEntity>
-    >(
-      (ref) => CharactersViewModel(
-        useCase: ref.read(addCharactersByPageUseCaseProvider),
-      ),
+    NotifierProvider<CharactersListNotifier, PaginatedListState<CharacterEntity>>(
+      CharactersListNotifier.new,
     );
 
-class CharactersViewModel extends PaginatedListViewModel<CharacterEntity> {
-  CharactersViewModel({required super.useCase});
+class CharactersListNotifier extends PaginatedListNotifier<CharacterEntity> {
+  @override
+  AddPaginatedItemsByPageUseCase<CharacterEntity> get useCase =>
+      ref.read(addCharactersByPageUseCaseProvider);
 
   CharacterStatus? get filterStatus =>
       _characterStatusFromFilter(state.filterValue);

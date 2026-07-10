@@ -42,7 +42,7 @@ Flutter app for the **technical challenge (Project 1)**: browse Rick & Morty cha
 
 | Layer | Choice |
 |-------|--------|
-| State | Riverpod (`StateNotifier`) |
+| State | Riverpod 3 (`Notifier`) |
 | Navigation | go_router (`StatefulShellRoute`) |
 | HTTP | Dio (`packages/api_client`) |
 | Functional errors | dartz `Either` |
@@ -145,7 +145,7 @@ Current coverage:
 
 - Repository implementation (success + error paths)
 - `AddPaginatedItemsByPageUseCase` (merge pages, filters, last page)
-- `PaginatedListViewModel` (refresh, fetchMore, search, partial errors)
+- `PaginatedListNotifier` (refresh, fetchMore, search, partial errors)
 - `CharactersPage` widget (loaded grid, empty state)
 
 ---

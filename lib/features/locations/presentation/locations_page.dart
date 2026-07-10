@@ -11,7 +11,7 @@ class LocationsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PaginatedListPage<LocationEntity>(
+    return PaginatedListPage<LocationEntity, LocationsListNotifier>(
       listProvider: locationsViewModelProvider,
       title: 'Lugares',
       searchHintText: 'Buscar ubicación...',

@@ -9,11 +9,12 @@ final addEpisodesByPageUseCaseProvider =
     );
 
 final episodesViewModelProvider =
-    StateNotifierProvider<
-      PaginatedListViewModel<EpisodeEntity>,
-      PaginatedListState<EpisodeEntity>
-    >(
-      (ref) => PaginatedListViewModel<EpisodeEntity>(
-        useCase: ref.read(addEpisodesByPageUseCaseProvider),
-      ),
+    NotifierProvider<EpisodesListNotifier, PaginatedListState<EpisodeEntity>>(
+      EpisodesListNotifier.new,
     );
+
+class EpisodesListNotifier extends PaginatedListNotifier<EpisodeEntity> {
+  @override
+  AddPaginatedItemsByPageUseCase<EpisodeEntity> get useCase =>
+      ref.read(addEpisodesByPageUseCaseProvider);
+}
