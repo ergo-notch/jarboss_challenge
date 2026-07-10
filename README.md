@@ -150,6 +150,36 @@ Current coverage:
 
 ---
 
+## Releases (APK)
+
+Release builds use the **Android debug keystore** (no flavors, no production signing). The APK is published automatically to [GitHub Releases](https://github.com/ergo-notch/jarboss_challenge/releases) via GitHub Actions.
+
+### Option A — Push a version tag (recommended)
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow runs on tags matching `v*` and uploads `app-release.apk` to a new release.
+
+### Option B — Manual trigger
+
+1. Go to **Actions** → **Build and Release APK** → **Run workflow**
+2. Enter a tag (e.g. `v1.0.0`) and run
+3. Download the APK from **Releases** once the job completes
+
+### Build locally
+
+```bash
+flutter build apk --release --dart-define-from-file=config.json
+# Output: build/app/outputs/flutter-apk/app-release.apk
+```
+
+> **Note:** Replace the default `dart.yml` workflow on GitHub if you created it from the template — that template targets Dart packages, not Flutter apps. Use `.github/workflows/release-apk.yml` instead.
+
+---
+
 ## AI usage
 
 This project was developed with AI assistance (Cursor). Prompts, delegated work, and rejected suggestions are documented in **[USO_IA.md](USO_IA.md)**.

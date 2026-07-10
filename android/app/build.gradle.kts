@@ -30,11 +30,16 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        // Debug keystore — used for release builds in this challenge (no production keystore).
+        getByName("debug")
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
