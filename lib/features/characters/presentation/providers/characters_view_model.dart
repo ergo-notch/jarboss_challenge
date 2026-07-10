@@ -38,6 +38,7 @@ class CharactersViewModel extends StateNotifier<CharactersState> {
       existingCharacters: const [],
       isRefresh: true,
       name: state.searchQuery,
+      filterStatus: state.filterStatus,
     );
   }
 
@@ -60,6 +61,7 @@ class CharactersViewModel extends StateNotifier<CharactersState> {
       existingCharacters: const [],
       isRefresh: true,
       name: query,
+      filterStatus: state.filterStatus,
     );
   }
 
@@ -78,6 +80,7 @@ class CharactersViewModel extends StateNotifier<CharactersState> {
       existingCharacters: state.characters,
       isRefresh: false,
       name: state.searchQuery,
+      filterStatus: state.filterStatus,
     );
   }
 
@@ -86,6 +89,7 @@ class CharactersViewModel extends StateNotifier<CharactersState> {
     required List<CharacterEntity> existingCharacters,
     required bool isRefresh,
     required String? name,
+    CharacterStatus? filterStatus,
   }) async {
     final result = await getCharactersByPageUseCase.call(
       AddCharactersByPageUseCaseParams(
@@ -93,6 +97,7 @@ class CharactersViewModel extends StateNotifier<CharactersState> {
         characters: isRefresh ? const [] : existingCharacters,
         isLastPage: isRefresh ? false : state.isLastPage,
         name: name?.isNotEmpty == true ? name : null,
+        filterStatus: filterStatus,
       ),
     );
 
@@ -124,6 +129,29 @@ class CharactersViewModel extends StateNotifier<CharactersState> {
           isLoadingMore: false,
         );
       },
+    );
+  }
+
+  Future<void> filterByStatus(CharacterStatus? value) async {
+    if (value == state.filterStatus && state.characters.isNotEmpty) return;
+    if (_isLoading) return;
+
+    state = state.copyWith(
+      filterStatus: value,
+      status: FetchStatus.fetching,
+      errorMessage: null,
+      nextPage: 1,
+      isLastPage: false,
+      isLoadingMore: false,
+      characters: const [],
+    );
+
+    await _loadPage(
+      page: 1,
+      existingCharacters: const [],
+      isRefresh: true,
+      name: state.searchQuery,
+      filterStatus: value,
     );
   }
 }

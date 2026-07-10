@@ -51,40 +51,63 @@ class CharacterDetailsPageState extends ConsumerState<CharacterDetailsPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerLowest,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 320,
             pinned: true,
             stretch: true,
-            backgroundColor: colorScheme.surfaceContainerLow,
+            backgroundColor: colorScheme.surface,
             leading: IconButton(
               iconSize: 40,
               icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
               onPressed: () => context.pop(),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              stretchModes: const [
-                StretchMode.zoomBackground,
-                StretchMode.blurBackground,
-              ],
-              title: Text(
-                _displayName,
-                maxLines: 2,
-                softWrap: true,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.w600,
-                  shadows: const [Shadow(blurRadius: 8, color: Colors.black54)],
-                ),
-              ),
-              background: _CharacterHeaderImage(
-                heroTag: widget.characterId,
-                imageUrl: _imageUrl,
-                status: state.details?.status,
-              ),
+            actions: const [ThemeToggleButton()],
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final height = constraints.maxHeight;
+                final statusBar = MediaQuery.paddingOf(context).top;
+                const expandedHeight = 320.0;
+                final collapsedHeight = kToolbarHeight + statusBar;
+                final expandRatio =
+                    ((height - collapsedHeight) /
+                            (expandedHeight - collapsedHeight))
+                        .clamp(0.0, 1.0);
+                final titleColor = Color.lerp(
+                  colorScheme.onSurface,
+                  colorScheme.onPrimary,
+                  expandRatio,
+                )!;
+
+                return FlexibleSpaceBar(
+                  stretchModes: const [StretchMode.zoomBackground],
+                  centerTitle: false,
+                  titlePadding: EdgeInsets.only(
+                    left: 56,
+                    right: 56,
+                    bottom: 16 * expandRatio + 8 * (1 - expandRatio),
+                  ),
+                  title: Text(
+                    _displayName,
+                    maxLines: expandRatio > 0.5 ? 2 : 1,
+                    softWrap: true,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: titleColor,
+                      fontWeight: FontWeight.w600,
+                      shadows: expandRatio > 0.3
+                          ? const [Shadow(blurRadius: 8, color: Colors.black54)]
+                          : null,
+                    ),
+                  ),
+                  background: _CharacterHeaderImage(
+                    heroTag: widget.characterId,
+                    imageUrl: _imageUrl,
+                    status: state.details?.status,
+                  ),
+                );
+              },
             ),
           ),
           if (state.status == FetchStatus.fetching && state.details == null)
@@ -100,45 +123,54 @@ class CharacterDetailsPageState extends ConsumerState<CharacterDetailsPage> {
             )
           else
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _DetailRow(
-                      label: 'Estado',
-                      value: (state.details?.status?.value ?? '').toUpperCase(),
-                      color: state.details?.status == CharacterStatus.dead
-                          ? Colors.red
-                          : state.details?.status == CharacterStatus.alive
-                          ? Colors.green
-                          : Colors.black,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _DetailRow(
+                          label: 'Estado',
+                          value: (state.details?.status?.value ?? '')
+                              .toUpperCase(),
+                          valueColor: switch (state.details?.status) {
+                            CharacterStatus.alive => Colors.green,
+                            CharacterStatus.dead => Colors.red,
+                            _ => null,
+                          },
+                        ),
+                        _DetailRow(
+                          label: 'Especie',
+                          value: state.details?.species ?? '',
+                        ),
+                        _DetailRow(
+                          label: 'Tipo',
+                          value: state.details?.type ?? '',
+                        ),
+                        _DetailRow(
+                          label: 'Origen',
+                          value: state.details?.origin ?? '',
+                        ),
+                        _DetailRow(
+                          label: 'Ubicación',
+                          value: state.details?.location ?? '',
+                        ),
+                        if (state.details?.episodes != null) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            'Episodios (${state.details!.episodes!.length})',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          EpisodesListWidget(
+                            episodes: state.details?.episodes ?? [],
+                          ),
+                        ],
+                      ],
                     ),
-                    _DetailRow(
-                      label: 'Especie',
-                      value: state.details?.species ?? '',
-                    ),
-                    _DetailRow(label: 'Tipo', value: state.details?.type ?? ''),
-                    _DetailRow(
-                      label: 'Origen',
-                      value: state.details?.origin ?? '',
-                    ),
-                    _DetailRow(
-                      label: 'Ubicación',
-                      value: state.details?.location ?? '',
-                    ),
-                    if (state.details?.episodes != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        'Episodios (${state.details!.episodes!.length})',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      EpisodesListWidget(
-                        episodes: state.details?.episodes ?? [],
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -213,39 +245,37 @@ class _CharacterHeaderImage extends StatelessWidget {
 class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
-  final Color color;
+  final Color? valueColor;
 
   const _DetailRow({
     required this.label,
     required this.value,
-    this.color = Colors.black,
+    this.valueColor,
   });
 
   @override
   Widget build(BuildContext context) {
     if (value.isEmpty) return const SizedBox.shrink();
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.normal,
-              color: Colors.black,
-              fontSize: 18,
+      child: RichText(
+        text: TextSpan(
+          style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
+          children: [
+            TextSpan(text: '$label: '),
+            TextSpan(
+              text: value,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: valueColor ?? colorScheme.primary,
+              ),
             ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: color,
-              fontSize: 18,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

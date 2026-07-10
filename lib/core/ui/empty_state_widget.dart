@@ -19,10 +19,12 @@ class EmptyStateWidget extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(height: 16),
-            Text(
+            Expanded(
+              child: Text(
               message,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           ],
         ),

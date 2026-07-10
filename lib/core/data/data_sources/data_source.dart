@@ -10,6 +10,7 @@ abstract class IDataSource {
   Future<CharactersListModel> getCharacters({
     num page = 1,
     String? name,
+    CharacterStatus? filterStatus,
   });
   Future<DetailsModel> getCharacterDetails({String? characterId});
 }
@@ -23,9 +24,9 @@ class DataSourceImpl implements IDataSource {
   Future<CharactersListModel> getCharacters({
     num page = 1,
     String? name,
+    CharacterStatus? filterStatus,
   }) async {
     try {
-      final hasNameFilter = name != null && name.isNotEmpty;
       final result = await client.query(
         '''
         query GetCharacters(\$page: Int!, \$filter: FilterCharacter) {
@@ -46,7 +47,10 @@ class DataSourceImpl implements IDataSource {
         }''',
         variables: {
           'page': page,
-          'filter': hasNameFilter ? {'name': name} : null,
+          'filter': _buildCharactersFilter(
+            name: name,
+            filterStatus: filterStatus,
+          ),
         },
       );
 
@@ -56,6 +60,22 @@ class DataSourceImpl implements IDataSource {
     } catch (e) {
       throw GraphQLErrorException(message: 'Error fetching characters: $e');
     }
+  }
+
+  Map<String, dynamic>? _buildCharactersFilter({
+    String? name,
+    CharacterStatus? filterStatus,
+  }) {
+    final filter = <String, dynamic>{};
+
+    if (name != null && name.isNotEmpty) {
+      filter['name'] = name;
+    }
+    if (filterStatus != null) {
+      filter['status'] = filterStatus.apiFilterValue;
+    }
+
+    return filter.isEmpty ? null : filter;
   }
 
   @override

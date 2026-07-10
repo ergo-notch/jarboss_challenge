@@ -33,6 +33,7 @@ class AddCharactersByPageUseCase
       final response = await repository.getCharacters(
         page: params.page,
         name: params.name,
+        filterStatus: params.filterStatus,
       );
       return response.fold((error) => Left(error), (success) {
         List<CharacterEntity> results = List.unmodifiable([
@@ -59,12 +60,14 @@ class AddCharactersByPageUseCaseParams {
   final List<CharacterEntity> characters;
   final bool isLastPage;
   final String? name;
+  final CharacterStatus? filterStatus;
 
   AddCharactersByPageUseCaseParams({
     this.page = 1,
     this.characters = const [],
     this.isLastPage = false,
     this.name,
+    this.filterStatus,
   });
 }
 

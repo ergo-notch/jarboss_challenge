@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class RetryWidget extends StatelessWidget {
   final String errorMessage;
-  final Function onRetry;
+  final VoidCallback onRetry;
 
   const RetryWidget({
     super.key,
@@ -12,32 +12,31 @@ class RetryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return SizedBox(
       height: 200,
       width: double.infinity,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            errorMessage,
-            style: TextStyle(
-              color: Colors.deepPurple,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextButton.icon(
-            onPressed: () => onRetry(),
-            label: const Text(
-              'Retry',
-              style: TextStyle(
-                color: Colors.deepPurple,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              errorMessage,
+              textAlign: TextAlign.center,
+              style: textTheme.titleMedium?.copyWith(
+                color: colorScheme.error,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            icon: const Icon(Icons.refresh, size: 35, color: Colors.deepPurple),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Reintentar'),
           ),
         ],
       ),

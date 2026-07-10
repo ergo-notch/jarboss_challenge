@@ -8,6 +8,7 @@ abstract class IRepository {
   Future<Either<GraphQLErrorException, CharactersListEntity>> getCharacters({
     num page = 1,
     String? name,
+    CharacterStatus? filterStatus,
   });
 
   Future<Either<GraphQLErrorException, DetailsEntity>> getCharacterDetails({

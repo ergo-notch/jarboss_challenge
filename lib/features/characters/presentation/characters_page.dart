@@ -52,9 +52,20 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
     await ref.read(charactersViewModelProvider.notifier).refreshCharacters();
   }
 
+  final List<DropdownMenuItem<CharacterStatus?>> _filterItems = [
+    DropdownMenuItem(value: null, child: Text('Todos')),
+    DropdownMenuItem(value: CharacterStatus.alive, child: Text('Vivo')),
+    DropdownMenuItem(value: CharacterStatus.dead, child: Text('Muerto')),
+    DropdownMenuItem(
+      value: CharacterStatus.unknown,
+      child: Text('Desconocido'),
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(charactersViewModelProvider);
+    final viewModel = ref.read(charactersViewModelProvider.notifier);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -73,28 +84,41 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
               SliverAppBar(
                 pinned: true,
                 elevation: 0,
-                scrolledUnderElevation: 1,
                 backgroundColor: colorScheme.surfaceContainerLow,
                 surfaceTintColor: colorScheme.surfaceTint,
-                actions: [
-                  Text('Light Theme'),
-                  Switch(value: true, onChanged: (value) {}),
-                ],
+                actions: const [ThemeToggleButton()],
                 bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(72),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: DebouncedSearchBar(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: DebouncedSearchBar(
                       hintText: 'Buscar por nombre...',
                       initialValue: state.searchQuery,
-                      onSearch: (query) => ref
-                          .read(charactersViewModelProvider.notifier)
-                          .searchByName(query),
+                            onSearch: (query) => viewModel.searchByName(query),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        DropdownButton<CharacterStatus?>(
+                          iconEnabledColor: colorScheme.onSurface,
+                          isDense: true,
+                          icon: Icon(Icons.filter_list),
+                          iconSize: 16,
+                          value: state.filterStatus,
+                          items: _filterItems,
+                          onChanged: (value) => viewModel.filterByStatus(value),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-              ..._buildContentSlivers(state),
+              ..._buildContentSlivers(context, state),
             ],
           ),
         ),
@@ -102,7 +126,10 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
     );
   }
 
-  List<Widget> _buildContentSlivers(CharactersState state) {
+  List<Widget> _buildContentSlivers(
+    BuildContext context,
+    CharactersState state,
+  ) {
     if (state.status == FetchStatus.fetching && state.characters.isEmpty) {
       return const [
         SliverFillRemaining(
@@ -140,11 +167,11 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
             character: character,
           );
         }, childCount: state.characters.length),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: Responsive.characterGridCrossAxisCount(context),
           childAspectRatio: 4 / 5,
-          mainAxisSpacing: 0,
-          crossAxisSpacing: 2,
+          mainAxisSpacing: 4,
+          crossAxisSpacing: 4,
         ),
       ),
       if (state.status == FetchStatus.loadingMore)

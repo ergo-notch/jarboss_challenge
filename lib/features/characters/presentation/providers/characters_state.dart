@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:jarboss_challenge/core/core.dart';
 
+const _unset = Object();
+
 @immutable
 class CharactersState extends Equatable {
   final FetchStatus status;
@@ -13,6 +15,8 @@ class CharactersState extends Equatable {
   final bool isLoadingMore;
   final String searchQuery;
 
+  final CharacterStatus? filterStatus;
+
   const CharactersState({
     this.status = FetchStatus.initial,
     this.errorMessage,
@@ -22,6 +26,7 @@ class CharactersState extends Equatable {
     this.isLastPage = false,
     this.isLoadingMore = false,
     this.searchQuery = '',
+    this.filterStatus,
   });
 
   CharactersState copyWith({
@@ -33,6 +38,7 @@ class CharactersState extends Equatable {
     bool? isLastPage,
     bool? isLoadingMore,
     String? searchQuery,
+    Object? filterStatus = _unset,
   }) {
     return CharactersState(
       status: status ?? this.status,
@@ -45,6 +51,9 @@ class CharactersState extends Equatable {
       isLastPage: isLastPage ?? this.isLastPage,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       searchQuery: searchQuery ?? this.searchQuery,
+      filterStatus: identical(filterStatus, _unset)
+          ? this.filterStatus
+          : filterStatus as CharacterStatus?,
     );
   }
 
@@ -58,5 +67,6 @@ class CharactersState extends Equatable {
     isLastPage,
     isLoadingMore,
     searchQuery,
+    filterStatus,
   ];
 }

@@ -3,3 +3,4 @@ export 'retry_widget.dart';
 export 'loading_footer_widget.dart';
 export 'app_images.dart';
 export 'debounced_search_bar.dart';
+export 'theme_toggle_button.dart';

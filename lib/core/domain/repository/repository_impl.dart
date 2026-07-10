@@ -9,9 +9,14 @@ class RepositoryImpl extends IRepository {
   Future<Either<GraphQLErrorException, CharactersListEntity>> getCharacters({
     num page = 1,
     String? name,
+    CharacterStatus? filterStatus,
   }) async {
     try {
-      final result = await dataSource.getCharacters(page: page, name: name);
+      final result = await dataSource.getCharacters(
+        page: page,
+        name: name,
+        filterStatus: filterStatus,
+      );
       return Right(CharactersListEntity.fromModel(result));
     } on GraphQLErrorException catch (e) {
       return Left(e);
