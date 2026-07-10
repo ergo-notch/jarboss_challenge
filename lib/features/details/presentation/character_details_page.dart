@@ -30,6 +30,14 @@ class CharacterDetailsPageState extends ConsumerState<CharacterDetailsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => loadCharacterDetails());
   }
 
+  @override
+  void didUpdateWidget(CharacterDetailsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.characterId != widget.characterId) {
+      loadCharacterDetails();
+    }
+  }
+
   void loadCharacterDetails() {
     ref
         .read(detailsViewModelProvider.notifier)
@@ -104,7 +112,7 @@ class CharacterDetailsPageState extends ConsumerState<CharacterDetailsPage> {
                   background: _CharacterHeaderImage(
                     heroTag: widget.characterId,
                     imageUrl: _imageUrl,
-                    status: state.details?.status,
+                    status: state.details?.status ?? widget.character?.status,
                   ),
                 );
               },

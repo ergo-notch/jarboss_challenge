@@ -4,6 +4,7 @@ import 'package:jarboss_challenge/features/characters/presentation/providers/cha
 import 'package:jarboss_challenge/features/characters/presentation/widgets/character_tile.dart';
 
 import '../../../core/core.dart';
+import '../../details/presentation/providers/details_view_model.dart';
 import 'providers/characters_view_model.dart';
 
 class CharactersPage extends ConsumerStatefulWidget {
@@ -159,6 +160,7 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
           final character = state.characters[index];
           return CharacterTile(
             onSelectCharacter: (character) {
+              ref.read(detailsViewModelProvider.notifier).clear();
               context.go(
                 '/characters/character/${character?.id}',
                 extra: character,

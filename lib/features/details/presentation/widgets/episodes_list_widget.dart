@@ -18,7 +18,7 @@ class EpisodesListWidget extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: ListTile(
-                  tileColor: Colors.deepPurple.withOpacity(0.9),
+                  tileColor: Colors.deepPurple.withValues(alpha: 0.9),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                     side: const BorderSide(color: Colors.deepPurple, width: 2),

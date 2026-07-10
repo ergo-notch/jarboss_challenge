@@ -24,8 +24,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void loadAnimation() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.delayed(const Duration(seconds: 2));
-
-      context.go(CharactersPage.path);
+      if (mounted) {
+        context.goNamed(CharactersPage.name);
+      }
     });
   }
 

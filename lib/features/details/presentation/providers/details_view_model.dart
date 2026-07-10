@@ -18,8 +18,12 @@ class DetailsViewModel extends StateNotifier<DetailsState> {
   DetailsViewModel({required this.getCharacterDetailsUseCase})
     : super(const DetailsState());
 
+  void clear() {
+    state = const DetailsState();
+  }
+
   Future<void> getCharacterDetails({String? characterId}) async {
-    state = state.copyWith(status: FetchStatus.fetching);
+    state = const DetailsState(status: FetchStatus.fetching);
     final result = await getCharacterDetailsUseCase(characterId);
     result.fold(
       (error) => state = state.copyWith(status: FetchStatus.error),
