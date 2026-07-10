@@ -1,6 +1,6 @@
 export 'ui/app_images.dart';
 export 'router.dart';
-export 'package:graphql_client/graphql_client.dart';
+export 'package:api_client/api_client.dart';
 export 'package:jarboss_challenge/features/characters/characters.dart';
 export 'data/data_sources/data_source.dart';
 export 'data/repository/repository.dart';
@@ -15,5 +15,7 @@ export 'utils/responsive.dart';
 export 'package:flutter_riverpod/flutter_riverpod.dart';
 export 'package:jarboss_challenge/features/details/details.dart';
 export 'domain/repository/repository_impl.dart';
+export 'exceptions/app_exception.dart';
+export 'exceptions/general_exception.dart';
 export 'utils/environment.dart';
 export 'ui/ui.dart';

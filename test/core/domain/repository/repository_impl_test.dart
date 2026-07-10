@@ -57,7 +57,7 @@ void main() {
     });
 
     test(
-      'returns Left when data source throws GraphQLErrorException',
+      'returns Left when data source throws ApiException',
       () async {
         when(
           () => mockDataSource.getCharacters(
@@ -65,14 +65,19 @@ void main() {
             name: any(named: 'name'),
             filterStatus: any(named: 'filterStatus'),
           ),
-        ).thenThrow(GraphQLErrorException(message: 'API error'));
+        ).thenThrow(
+          ApiException(
+            type: ApiErrorType.serverError,
+            technicalMessage: 'API error',
+          ),
+        );
 
         final result = await repository.getCharacters();
 
         expect(result.isLeft(), isTrue);
-        result.fold((error) => expect(error.message, 'API error'), (_) {
-          fail('Expected error');
-        });
+      result.fold((error) => expect(error.userMessage, isNotEmpty), (_) {
+        fail('Expected error');
+      });
       },
     );
   });

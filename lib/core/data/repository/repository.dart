@@ -5,13 +5,13 @@ final repositoryProvider = Provider<IRepository>(
 );
 
 abstract class IRepository {
-  Future<Either<GraphQLErrorException, CharactersListEntity>> getCharacters({
+  Future<Either<AppException, CharactersListEntity>> getCharacters({
     num page = 1,
     String? name,
     CharacterStatus? filterStatus,
   });
 
-  Future<Either<GraphQLErrorException, DetailsEntity>> getCharacterDetails({
+  Future<Either<AppException, DetailsEntity>> getCharacterDetails({
     String? characterId,
   });
 }

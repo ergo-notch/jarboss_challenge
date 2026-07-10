@@ -7,19 +7,18 @@ const _unset = Object();
 @immutable
 class CharactersState extends Equatable {
   final FetchStatus status;
-  final String? errorMessage;
+  final AppException? error;
   final num? nextPage;
   final num? totalResults;
   final List<CharacterEntity> characters;
   final bool isLastPage;
   final bool isLoadingMore;
   final String searchQuery;
-
   final CharacterStatus? filterStatus;
 
   const CharactersState({
     this.status = FetchStatus.initial,
-    this.errorMessage,
+    this.error,
     this.nextPage,
     this.totalResults,
     this.characters = const [],
@@ -31,7 +30,7 @@ class CharactersState extends Equatable {
 
   CharactersState copyWith({
     FetchStatus? status,
-    String? errorMessage,
+    Object? error = _unset,
     num? nextPage,
     num? totalResults,
     List<CharacterEntity>? characters,
@@ -42,7 +41,7 @@ class CharactersState extends Equatable {
   }) {
     return CharactersState(
       status: status ?? this.status,
-      errorMessage: errorMessage,
+      error: identical(error, _unset) ? this.error : error as AppException?,
       nextPage: nextPage ?? this.nextPage,
       totalResults: totalResults ?? this.totalResults,
       characters: characters != null
@@ -60,7 +59,7 @@ class CharactersState extends Equatable {
   @override
   List<Object?> get props => [
     status,
-    errorMessage,
+    error,
     nextPage,
     totalResults,
     characters,

@@ -1,14 +1,25 @@
+import 'package:api_client/api_client.dart';
 import 'package:flutter/material.dart';
 
 class RetryWidget extends StatelessWidget {
-  final String errorMessage;
+  final CustomException error;
   final VoidCallback onRetry;
 
   const RetryWidget({
     super.key,
-    required this.errorMessage,
+    required this.error,
     required this.onRetry,
   });
+
+  IconData get _icon => switch (error) {
+    ApiException(type: ApiErrorType.network) => Icons.wifi_off_rounded,
+    ApiException(type: ApiErrorType.timeout) => Icons.timer_off_rounded,
+    ApiException(type: ApiErrorType.rateLimited) => Icons.speed_rounded,
+    ApiException(type: ApiErrorType.notFound) => Icons.search_off_rounded,
+    ApiException(type: ApiErrorType.serverError) => Icons.cloud_off_rounded,
+    ApiException() => Icons.cloud_off_rounded,
+    _ => Icons.error_outline_rounded,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -16,29 +27,38 @@ class RetryWidget extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return SizedBox(
-      height: 200,
       width: double.infinity,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              errorMessage,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(_icon, size: 56, color: colorScheme.error),
+            const SizedBox(height: 16),
+            Text(
+              error.title,
               textAlign: TextAlign.center,
               style: textTheme.titleMedium?.copyWith(
-                color: colorScheme.error,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Reintentar'),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              error.userMessage,
+              textAlign: TextAlign.center,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reintentar'),
+            ),
+          ],
+        ),
       ),
     );
   }

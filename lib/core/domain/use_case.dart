@@ -1,9 +1,9 @@
 import 'package:jarboss_challenge/core/core.dart';
 
-abstract class UseCase<Result, Params> {
-  Future<Either<GraphQLErrorException, Result>> call(Params params);
+abstract class UseCase<Type, Params> {
+  Future<Either<AppException, Type>> call(Params params);
 }
 
-abstract class NoParams {}
+class NoParams {}
 
-abstract class NoResults {}
+class NoResults {}

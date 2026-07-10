@@ -27,26 +27,20 @@ class DetailsModel extends Equatable {
     this.episodes,
   });
 
-  factory DetailsModel.fromJson(Map<String, dynamic> json) {
-    final character = json['character'] as Map<String, dynamic>?;
-    final rawEpisodes = character?['episode'] as List<dynamic>?;
-
+  factory DetailsModel.fromRestJson(
+    Map<String, dynamic> json, {
+    List<EpisodeModel>? episodes,
+  }) {
     return DetailsModel(
-      id: character?['id']?.toString(),
-      name: character?['name'] as String?,
-      status: character?['status'] as String?,
-      species: character?['species'] as String?,
-      type: character?['type'] as String?,
-      origin: character?['origin']?['name'] as String?,
-      location: character?['location']?['name'] as String?,
-      image: character?['image'] as String?,
-      episodes: rawEpisodes == null
-          ? null
-          : List.unmodifiable(
-              rawEpisodes.map(
-                (item) => EpisodeModel.fromJson(item as Map<String, dynamic>),
-              ),
-            ),
+      id: json['id']?.toString(),
+      name: json['name'] as String?,
+      status: json['status'] as String?,
+      species: json['species'] as String?,
+      type: json['type'] as String?,
+      origin: json['origin']?['name'] as String?,
+      location: json['location']?['name'] as String?,
+      image: json['image'] as String?,
+      episodes: episodes == null ? null : List.unmodifiable(episodes),
     );
   }
 

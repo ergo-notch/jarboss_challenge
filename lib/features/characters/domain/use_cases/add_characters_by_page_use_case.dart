@@ -15,7 +15,7 @@ class AddCharactersByPageUseCase
   AddCharactersByPageUseCase({required this.repository});
 
   @override
-  Future<Either<GraphQLErrorException, AddCharactersByPageUseCaseResult>> call(
+  Future<Either<AppException, AddCharactersByPageUseCaseResult>> call(
     AddCharactersByPageUseCaseParams params,
   ) async {
     if (params.isLastPage) {

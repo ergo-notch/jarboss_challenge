@@ -125,7 +125,7 @@ class CharacterDetailsPageState extends ConsumerState<CharacterDetailsPage> {
           else if (state.status == FetchStatus.error && state.details == null)
             SliverFillRemaining(
               child: RetryWidget(
-                errorMessage: 'Error al cargar el personaje',
+                error: state.error!,
                 onRetry: loadCharacterDetails,
               ),
             )

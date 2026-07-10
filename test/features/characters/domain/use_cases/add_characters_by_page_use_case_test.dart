@@ -109,14 +109,19 @@ void main() {
           filterStatus: any(named: 'filterStatus'),
         ),
       ).thenAnswer(
-        (_) async => Left(GraphQLErrorException(message: 'Network error')),
+        (_) async => Left(
+          ApiException(
+            type: ApiErrorType.network,
+            technicalMessage: 'Network error',
+          ),
+        ),
       );
 
       final result = await useCase(AddCharactersByPageUseCaseParams());
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (error) => expect(error.message, 'Network error'),
+        (error) => expect(error.userMessage, isNotEmpty),
         (_) => fail('Expected error'),
       );
     });

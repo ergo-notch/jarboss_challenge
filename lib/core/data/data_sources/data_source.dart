@@ -1,9 +1,10 @@
 import 'package:jarboss_challenge/features/details/data/models/details_model.dart';
+import 'package:jarboss_challenge/features/details/data/models/episode_model.dart';
 
 import '../../core.dart';
 
 final dataSourceProvider = Provider<IDataSource>(
-  (ref) => DataSourceImpl(client: ref.read(graphqlProvider)),
+  (ref) => DataSourceImpl(client: ref.read(apiClientProvider)),
 );
 
 abstract class IDataSource {
@@ -16,7 +17,7 @@ abstract class IDataSource {
 }
 
 class DataSourceImpl implements IDataSource {
-  final GraphQLService client;
+  final ApiClient client;
 
   DataSourceImpl({required this.client});
 
@@ -27,89 +28,73 @@ class DataSourceImpl implements IDataSource {
     CharacterStatus? filterStatus,
   }) async {
     try {
-      final result = await client.query(
-        '''
-        query GetCharacters(\$page: Int!, \$filter: FilterCharacter) {
-          characters(page: \$page, filter: \$filter) {
-            info {
-              count
-              next
-              prev
-            }
-            results {
-              id
-              name
-              status
-              species
-              image
-            }
-          }
-        }''',
-        variables: {
+      final result = await client.get(
+        '/character',
+        queryParameters: {
           'page': page,
-          'filter': _buildCharactersFilter(
-            name: name,
-            filterStatus: filterStatus,
-          ),
+          ...?_buildCharactersQuery(name: name, filterStatus: filterStatus),
         },
       );
 
       return CharactersListModel.fromJson(result);
-    } on GraphQLErrorException catch (_) {
+    } on ApiException catch (error) {
+      if (error.type == ApiErrorType.notFound) {
+        return const CharactersListModel(count: 0, results: []);
+      }
       rethrow;
-    } catch (e) {
-      throw GraphQLErrorException(message: 'Error fetching characters: $e');
+    } catch (error, stackTrace) {
+      throw GeneralException.parsing(error, context: stackTrace.toString());
     }
   }
 
-  Map<String, dynamic>? _buildCharactersFilter({
+  Map<String, dynamic>? _buildCharactersQuery({
     String? name,
     CharacterStatus? filterStatus,
   }) {
-    final filter = <String, dynamic>{};
+    final query = <String, dynamic>{};
 
     if (name != null && name.isNotEmpty) {
-      filter['name'] = name;
+      query['name'] = name;
     }
     if (filterStatus != null) {
-      filter['status'] = filterStatus.apiFilterValue;
+      query['status'] = filterStatus.apiFilterValue;
     }
 
-    return filter.isEmpty ? null : filter;
+    return query.isEmpty ? null : query;
   }
 
   @override
   Future<DetailsModel> getCharacterDetails({String? characterId}) async {
     try {
-      final result = await client.query('''
-                    query {
-                      character(id: $characterId) {
-                            id
-                            name
-                            status
-                            species
-                            type
-                            origin{
-                                  name
-                            }
-                            location{
-                                  name
-                            }
-                            image
-                            episode{
-                                  episode
-                                  name
-                            }
-                      }
-                      }''');
-
-      return DetailsModel.fromJson(result);
-    } on GraphQLErrorException catch (_) {
-      rethrow;
-    } catch (e) {
-      throw GraphQLErrorException(
-        message: 'Error fetching character details: $e',
+      final character = await client.get('/character/$characterId');
+      final episodes = await _fetchEpisodes(
+        character['episode'] as List<dynamic>?,
       );
+
+      return DetailsModel.fromRestJson(character, episodes: episodes);
+    } on ApiException {
+      rethrow;
+    } catch (error, stackTrace) {
+      throw GeneralException.parsing(error, context: stackTrace.toString());
     }
+  }
+
+  Future<List<EpisodeModel>> _fetchEpisodes(List<dynamic>? episodeUrls) async {
+    if (episodeUrls == null || episodeUrls.isEmpty) {
+      return const [];
+    }
+
+    final ids = episodeUrls
+        .map((url) => url.toString().split('/').last)
+        .join(',');
+
+    final response = await client.getData('/episode/$ids');
+    final rawEpisodes = response is List<dynamic> ? response : [response];
+
+    return List.unmodifiable(
+      rawEpisodes.map(
+        (item) => EpisodeModel.fromJson(item as Map<String, dynamic>),
+      ),
+    );
   }
 }

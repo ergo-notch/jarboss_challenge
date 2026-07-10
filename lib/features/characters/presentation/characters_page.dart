@@ -40,9 +40,10 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
     if (!_scrollController.hasClients) return;
 
     final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 50) {
-      _fetchCharacters();
-    }
+    if (position.maxScrollExtent <= 0) return;
+    if (position.pixels < position.maxScrollExtent - 50) return;
+
+    _fetchCharacters();
   }
 
   void _fetchCharacters() {
@@ -71,6 +72,16 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLowest,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        label: const Text('Volver al inicio'),
+      ),
       body: RefreshIndicator(
         onRefresh: _refreshCharacters,
         child: Scrollbar(
@@ -147,7 +158,7 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
       return [
         SliverFillRemaining(
           child: RetryWidget(
-            errorMessage: state.errorMessage ?? 'Error al cargar personajes',
+            error: state.error!,
             onRetry: _fetchCharacters,
           ),
         ),
@@ -178,10 +189,10 @@ class CharactersPageState extends ConsumerState<CharactersPage> {
       ),
       if (state.status == FetchStatus.loadingMore)
         const SliverToBoxAdapter(child: LoadingFooterWidget()),
-      if (state.errorMessage != null && state.characters.isNotEmpty)
+      if (state.error != null && state.characters.isNotEmpty)
         SliverToBoxAdapter(
           child: RetryWidget(
-            errorMessage: state.errorMessage!,
+            error: state.error!,
             onRetry: _fetchCharacters,
           ),
         ),

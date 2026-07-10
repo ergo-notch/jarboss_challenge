@@ -10,7 +10,7 @@ class GetCharacterDetailsUseCase extends UseCase<DetailsEntity, String?> {
   GetCharacterDetailsUseCase({required this.repository});
 
   @override
-  Future<Either<GraphQLErrorException, DetailsEntity>> call(
+  Future<Either<AppException, DetailsEntity>> call(
     String? characterId,
   ) async {
     return await repository.getCharacterDetails(characterId: characterId);

@@ -26,9 +26,15 @@ class DetailsViewModel extends StateNotifier<DetailsState> {
     state = const DetailsState(status: FetchStatus.fetching);
     final result = await getCharacterDetailsUseCase(characterId);
     result.fold(
-      (error) => state = state.copyWith(status: FetchStatus.error),
-      (details) =>
-          state = state.copyWith(status: FetchStatus.success, details: details),
+      (error) => state = state.copyWith(
+        status: FetchStatus.error,
+        error: error,
+      ),
+      (details) => state = state.copyWith(
+        status: FetchStatus.success,
+        details: details,
+        error: null,
+      ),
     );
   }
 }

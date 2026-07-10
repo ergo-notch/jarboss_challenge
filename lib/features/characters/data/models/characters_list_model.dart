@@ -18,12 +18,13 @@ class CharactersListModel extends Equatable {
   });
 
   factory CharactersListModel.fromJson(Map<String, dynamic> json) {
-    final rawResults = json['characters']['results'] as List<dynamic>?;
+    final info = json['info'] as Map<String, dynamic>?;
+    final rawResults = json['results'] as List<dynamic>?;
 
     return CharactersListModel(
-      count: json['characters']['info']['count'] as num?,
-      next: json['characters']['info']['next'] as num?,
-      prev: json['characters']['info']['prev'] as num?,
+      count: info?['count'] as num?,
+      next: _parsePageFromUrl(info?['next'] as String?),
+      prev: _parsePageFromUrl(info?['prev'] as String?),
       results: rawResults == null
           ? null
           : List.unmodifiable(
@@ -32,6 +33,12 @@ class CharactersListModel extends Equatable {
               ),
             ),
     );
+  }
+
+  static num? _parsePageFromUrl(String? url) {
+    if (url == null || url.isEmpty) return null;
+    final page = Uri.parse(url).queryParameters['page'];
+    return page == null ? null : num.tryParse(page);
   }
 
   @override

@@ -1,0 +1,14 @@
+name: api_client
+description: REST API client for Rick and Morty API using Dio.
+version: 0.1.0
+publish_to: "none"
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  dio: ^5.9.0
+  pretty_dio_logger: ^1.4.0
+
+dev_dependencies:
+  test: ^1.31.1

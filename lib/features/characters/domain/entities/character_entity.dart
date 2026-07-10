@@ -11,11 +11,7 @@ enum CharacterStatus {
 
   const CharacterStatus(this.value);
 
-  String get apiFilterValue => switch (this) {
-    CharacterStatus.alive => 'Alive',
-    CharacterStatus.dead => 'Dead',
-    CharacterStatus.unknown => 'unknown',
-  };
+  String get apiFilterValue => value;
 
   @override
   String toString() => value;

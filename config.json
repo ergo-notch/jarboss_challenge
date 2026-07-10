@@ -1,4 +1,4 @@
 {
-    "BASE_URL": "https://rickandmortyapi.com/graphql",
+    "BASE_URL": "https://rickandmortyapi.com/api",
     "ENVIRONMENT": "development"
 }
