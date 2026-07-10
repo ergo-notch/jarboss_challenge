@@ -5,54 +5,52 @@ import 'package:jarboss_challenge/core/core.dart';
 const _unset = Object();
 
 @immutable
-class CharactersState extends Equatable {
+class PaginatedListState<T> extends Equatable {
   final FetchStatus status;
   final AppException? error;
   final num? nextPage;
   final num? totalResults;
-  final List<CharacterEntity> characters;
+  final List<T> items;
   final bool isLastPage;
   final bool isLoadingMore;
   final String searchQuery;
-  final CharacterStatus? filterStatus;
+  final String? filterValue;
 
-  const CharactersState({
+  const PaginatedListState({
     this.status = FetchStatus.initial,
     this.error,
     this.nextPage,
     this.totalResults,
-    this.characters = const [],
+    this.items = const [],
     this.isLastPage = false,
     this.isLoadingMore = false,
     this.searchQuery = '',
-    this.filterStatus,
+    this.filterValue,
   });
 
-  CharactersState copyWith({
+  PaginatedListState<T> copyWith({
     FetchStatus? status,
     Object? error = _unset,
     num? nextPage,
     num? totalResults,
-    List<CharacterEntity>? characters,
+    List<T>? items,
     bool? isLastPage,
     bool? isLoadingMore,
     String? searchQuery,
-    Object? filterStatus = _unset,
+    Object? filterValue = _unset,
   }) {
-    return CharactersState(
+    return PaginatedListState<T>(
       status: status ?? this.status,
       error: identical(error, _unset) ? this.error : error as AppException?,
       nextPage: nextPage ?? this.nextPage,
       totalResults: totalResults ?? this.totalResults,
-      characters: characters != null
-          ? List.unmodifiable(characters)
-          : this.characters,
+      items: items != null ? List.unmodifiable(items) : this.items,
       isLastPage: isLastPage ?? this.isLastPage,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       searchQuery: searchQuery ?? this.searchQuery,
-      filterStatus: identical(filterStatus, _unset)
-          ? this.filterStatus
-          : filterStatus as CharacterStatus?,
+      filterValue: identical(filterValue, _unset)
+          ? this.filterValue
+          : filterValue as String?,
     );
   }
 
@@ -62,10 +60,10 @@ class CharactersState extends Equatable {
     error,
     nextPage,
     totalResults,
-    characters,
+    items,
     isLastPage,
     isLoadingMore,
     searchQuery,
-    filterStatus,
+    filterValue,
   ];
 }

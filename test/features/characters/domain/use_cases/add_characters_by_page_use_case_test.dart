@@ -1,28 +1,50 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jarboss_challenge/core/core.dart';
-import 'package:jarboss_challenge/features/characters/domain/use_cases/add_characters_by_page_use_case.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../helpers/mocks.dart';
 
 void main() {
   late MockIRepository mockRepository;
-  late AddCharactersByPageUseCase useCase;
+  late AddPaginatedItemsByPageUseCase<CharacterEntity> useCase;
 
   setUpAll(() {
-    registerFallbackValue(AddCharactersByPageUseCaseParams());
+    registerFallbackValue(
+      AddPaginatedItemsByPageUseCaseParams<CharacterEntity>(),
+    );
   });
 
   setUp(() {
     mockRepository = MockIRepository();
-    useCase = AddCharactersByPageUseCase(repository: mockRepository);
+    useCase = AddPaginatedItemsByPageUseCase<CharacterEntity>(
+      fetchPage: ({required page, name, filterValue}) async {
+        final status = filterValue == null
+            ? null
+            : CharacterStatus.values.firstWhere(
+                (value) => value.apiFilterValue == filterValue,
+              );
+        final result = await mockRepository.getCharacters(
+          page: page,
+          name: name,
+          filterStatus: status,
+        );
+        return result.map(
+          (success) => PaginatedListEntity<CharacterEntity>(
+            count: success.count,
+            next: success.next,
+            prev: success.prev,
+            results: success.results,
+          ),
+        );
+      },
+    );
   });
 
-  group('AddCharactersByPageUseCase', () {
+  group('AddPaginatedItemsByPageUseCase<CharacterEntity>', () {
     test('returns cached characters when already on last page', () async {
-      final params = AddCharactersByPageUseCaseParams(
+      final params = AddPaginatedItemsByPageUseCaseParams<CharacterEntity>(
         page: 3,
-        characters: [rickEntity],
+        items: [rickEntity],
         isLastPage: true,
       );
 
@@ -60,9 +82,9 @@ void main() {
         ),
       );
 
-      final params = AddCharactersByPageUseCaseParams(
+      final params = AddPaginatedItemsByPageUseCaseParams<CharacterEntity>(
         page: 2,
-        characters: [rickEntity],
+        items: [rickEntity],
       );
 
       final result = await useCase(params);
@@ -86,9 +108,9 @@ void main() {
       );
 
       await useCase(
-        AddCharactersByPageUseCaseParams(
+        AddPaginatedItemsByPageUseCaseParams<CharacterEntity>(
           name: 'Rick',
-          filterStatus: CharacterStatus.dead,
+          filterValue: CharacterStatus.dead.apiFilterValue,
         ),
       );
 
@@ -117,7 +139,9 @@ void main() {
         ),
       );
 
-      final result = await useCase(AddCharactersByPageUseCaseParams());
+      final result = await useCase(
+        AddPaginatedItemsByPageUseCaseParams<CharacterEntity>(),
+      );
 
       expect(result.isLeft(), isTrue);
       result.fold(

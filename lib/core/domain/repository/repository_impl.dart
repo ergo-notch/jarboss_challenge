@@ -28,6 +28,42 @@ class RepositoryImpl extends IRepository {
   }
 
   @override
+  Future<Either<AppException, PaginatedListEntity<LocationEntity>>>
+  getLocations({num page = 1, String? name}) async {
+    try {
+      final result = await dataSource.getLocations(page: page, name: name);
+      return Right(
+        PaginatedListEntity.fromModel(result, LocationEntity.fromModel),
+      );
+    } on ApiException catch (error) {
+      return Left(error);
+    } on GeneralException catch (error) {
+      return Left(error);
+    } catch (error) {
+      return Left(GeneralException.unexpected(error));
+    }
+  }
+
+  @override
+  Future<Either<AppException, PaginatedListEntity<EpisodeEntity>>> getEpisodes({
+    num page = 1,
+    String? name,
+  }) async {
+    try {
+      final result = await dataSource.getEpisodes(page: page, name: name);
+      return Right(
+        PaginatedListEntity.fromModel(result, EpisodeEntity.fromModel),
+      );
+    } on ApiException catch (error) {
+      return Left(error);
+    } on GeneralException catch (error) {
+      return Left(error);
+    } catch (error) {
+      return Left(GeneralException.unexpected(error));
+    }
+  }
+
+  @override
   Future<Either<AppException, DetailsEntity>> getCharacterDetails({
     String? characterId,
   }) async {

@@ -11,8 +11,16 @@ class CharacterTile extends StatelessWidget {
     required this.character,
   });
 
+  Color _statusColor(CharacterStatus? status) => switch (status) {
+    CharacterStatus.alive => Colors.green,
+    CharacterStatus.dead => Colors.red,
+    _ => Colors.grey,
+  };
+
   @override
   Widget build(BuildContext context) {
+    final statusColor = _statusColor(character?.status);
+
     return Padding(
       padding: const EdgeInsets.all(6.0),
       child: InkWell(
@@ -26,13 +34,20 @@ class CharacterTile extends StatelessWidget {
           ),
           elevation: 4,
           shadowColor: Colors.deepPurple,
-          child: Stack(
+          child: ClipRect(
+            child: Banner(
+              message: character?.species ?? '',
+              location: BannerLocation.topEnd,
+              textStyle: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+              child: Stack(
             children: [
               
               Hero(
                 tag: character?.id ?? '',
-                transitionOnUserGestures: true,
-
+                    transitionOnUserGestures: true,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.network(
@@ -51,23 +66,13 @@ class CharacterTile extends StatelessWidget {
                 ),
               ),
               Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
                   gradient: LinearGradient(
                     colors: [
-                      (character?.status == CharacterStatus.dead
-                              ? Colors.red
-                              : character?.status == CharacterStatus.alive
-                              ? Colors.green
-                              : Colors.white)
-                          .withValues(alpha: 0.8),
-                      (character?.status == CharacterStatus.dead
-                              ? Colors.red
-                              : character?.status == CharacterStatus.alive
-                              ? Colors.green
-                              : Colors.white)
-                          .withValues(alpha: 0.4),
-                      Colors.black.withValues(alpha: 0.8),
+                          statusColor.withValues(alpha: 0.8),
+                          statusColor.withValues(alpha: 0.4),
+                          Colors.black.withValues(alpha: 0.85),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -76,18 +81,31 @@ class CharacterTile extends StatelessWidget {
                 ),
                 child: Align(
                   alignment: Alignment.bottomCenter,
-                    child: Text(
-                    character?.name ?? '',
-                      style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              character?.name ?? '',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
-                    textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

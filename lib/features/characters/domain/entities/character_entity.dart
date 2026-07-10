@@ -22,15 +22,23 @@ class CharacterEntity extends Equatable {
   final String? id;
   final String? name;
   final CharacterStatus? status;
+  final String? species;
   final String? imageUrl;
 
-  const CharacterEntity({this.id, this.name, this.status, this.imageUrl});
+  const CharacterEntity({
+    this.id,
+    this.name,
+    this.status,
+    this.species,
+    this.imageUrl,
+  });
 
   factory CharacterEntity.fromModel(CharacterModel model) {
     return CharacterEntity(
       id: model.id,
       name: model.name,
       status: _mapStatus(model.status),
+      species: model.species,
       imageUrl: model.image,
     );
   }
@@ -44,5 +52,5 @@ class CharacterEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, status, imageUrl];
+  List<Object?> get props => [id, name, status, species, imageUrl];
 }

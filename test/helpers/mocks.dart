@@ -5,11 +5,11 @@ class MockIDataSource extends Mock implements IDataSource {}
 
 class MockIRepository extends Mock implements IRepository {}
 
-
 const rickEntity = CharacterEntity(
   id: '1',
   name: 'Rick Sanchez',
   status: CharacterStatus.alive,
+  species: 'Human',
   imageUrl: 'https://example.com/rick.png',
 );
 
@@ -17,6 +17,7 @@ const mortyEntity = CharacterEntity(
   id: '2',
   name: 'Morty Smith',
   status: CharacterStatus.alive,
+  species: 'Human',
   imageUrl: 'https://example.com/morty.png',
 );
 
@@ -28,19 +29,20 @@ CharactersListModel charactersListModel({
       id: '1',
       name: 'Rick Sanchez',
       status: 'Alive',
+      species: 'Human',
       image: 'https://example.com/rick.png',
     ),
     CharacterModel(
       id: '2',
       name: 'Morty Smith',
       status: 'Alive',
+      species: 'Human',
       image: 'https://example.com/morty.png',
     ),
   ],
 }) {
   return CharactersListModel(count: count, next: next, results: results);
 }
-
 
 CharactersListEntity charactersListEntity({
   num count = 2,
@@ -50,3 +52,10 @@ CharactersListEntity charactersListEntity({
   return CharactersListEntity(count: count, next: next, results: results);
 }
 
+PaginatedListEntity<T> paginatedEntity<T>({
+  num count = 2,
+  num? next,
+  List<T> results = const [],
+}) {
+  return PaginatedListEntity(count: count, next: next, results: results);
+}

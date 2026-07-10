@@ -13,6 +13,17 @@ abstract class IDataSource {
     String? name,
     CharacterStatus? filterStatus,
   });
+
+  Future<PaginatedListModel<LocationModel>> getLocations({
+    num page = 1,
+    String? name,
+  });
+
+  Future<PaginatedListModel<EpisodeListModel>> getEpisodes({
+    num page = 1,
+    String? name,
+  });
+
   Future<DetailsModel> getCharacterDetails({String? characterId});
 }
 
@@ -47,6 +58,56 @@ class DataSourceImpl implements IDataSource {
     }
   }
 
+  @override
+  Future<PaginatedListModel<LocationModel>> getLocations({
+    num page = 1,
+    String? name,
+  }) async {
+    try {
+      final result = await client.get(
+        '/location',
+        queryParameters: {
+          'page': page,
+          ...?_buildNameQuery(name),
+        },
+      );
+
+      return PaginatedListModel.fromJson(result, LocationModel.fromJson);
+    } on ApiException catch (error) {
+      if (error.type == ApiErrorType.notFound) {
+        return const PaginatedListModel(count: 0, results: []);
+      }
+      rethrow;
+    } catch (error, stackTrace) {
+      throw GeneralException.parsing(error, context: stackTrace.toString());
+    }
+  }
+
+  @override
+  Future<PaginatedListModel<EpisodeListModel>> getEpisodes({
+    num page = 1,
+    String? name,
+  }) async {
+    try {
+      final result = await client.get(
+        '/episode',
+        queryParameters: {
+          'page': page,
+          ...?_buildNameQuery(name),
+        },
+      );
+
+      return PaginatedListModel.fromJson(result, EpisodeListModel.fromJson);
+    } on ApiException catch (error) {
+      if (error.type == ApiErrorType.notFound) {
+        return const PaginatedListModel(count: 0, results: []);
+      }
+      rethrow;
+    } catch (error, stackTrace) {
+      throw GeneralException.parsing(error, context: stackTrace.toString());
+    }
+  }
+
   Map<String, dynamic>? _buildCharactersQuery({
     String? name,
     CharacterStatus? filterStatus,
@@ -61,6 +122,11 @@ class DataSourceImpl implements IDataSource {
     }
 
     return query.isEmpty ? null : query;
+  }
+
+  Map<String, dynamic>? _buildNameQuery(String? name) {
+    if (name == null || name.isEmpty) return null;
+    return {'name': name};
   }
 
   @override

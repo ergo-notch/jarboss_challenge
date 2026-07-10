@@ -11,6 +11,16 @@ abstract class IRepository {
     CharacterStatus? filterStatus,
   });
 
+  Future<Either<AppException, PaginatedListEntity<LocationEntity>>> getLocations({
+    num page = 1,
+    String? name,
+  });
+
+  Future<Either<AppException, PaginatedListEntity<EpisodeEntity>>> getEpisodes({
+    num page = 1,
+    String? name,
+  });
+
   Future<Either<AppException, DetailsEntity>> getCharacterDetails({
     String? characterId,
   });

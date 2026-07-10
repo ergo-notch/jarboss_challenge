@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jarboss_challenge/core/core.dart';
-import 'package:jarboss_challenge/features/characters/domain/use_cases/add_characters_by_page_use_case.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/mocks.dart';
 
 void main() {
   late MockIRepository mockRepository;
-
-  setUpAll(() {
-    registerFallbackValue(AddCharactersByPageUseCaseParams());
-  });
 
   setUp(() {
     mockRepository = MockIRepository();
@@ -20,9 +15,7 @@ void main() {
   Widget buildSubject() {
     return ProviderScope(
       overrides: [
-        addCharactersByPageUseCaseProvider.overrideWithValue(
-          AddCharactersByPageUseCase(repository: mockRepository),
-        ),
+        repositoryProvider.overrideWithValue(mockRepository),
       ],
       child: MaterialApp(theme: AppTheme.light, home: const CharactersPage()),
     );
@@ -41,10 +34,11 @@ void main() {
 
     await tester.pumpWidget(buildSubject());
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Rick Sanchez'), findsOneWidget);
     expect(find.text('Morty Smith'), findsOneWidget);
+    expect(find.text('Personajes'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
@@ -64,7 +58,7 @@ void main() {
 
     await tester.pumpWidget(buildSubject());
     await tester.pump();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Sin resultados'), findsOneWidget);
   });
