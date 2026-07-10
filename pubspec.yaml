@@ -21,8 +21,8 @@ dependencies:
     path: packages/api_client
 
   dartz: ^0.10.1
-  riverpod: ^2.6.1
-  flutter_riverpod: ^2.6.1
+  riverpod: ^3.3.2
+  flutter_riverpod: ^3.3.2
 
 dev_dependencies:
   flutter_test:

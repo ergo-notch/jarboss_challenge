@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:jarboss_challenge/core/core.dart';
 
-typedef PaginatedListProvider<T> =
-    StateNotifierProvider<PaginatedListViewModel<T>, PaginatedListState<T>>;
+typedef PaginatedListProvider<T, N extends PaginatedListNotifier<T>>
+    = NotifierProvider<N, PaginatedListState<T>>;
 
-class PaginatedListPage<T> extends ConsumerStatefulWidget {
-  final PaginatedListProvider<T> listProvider;
+class PaginatedListPage<T, N extends PaginatedListNotifier<T>>
+    extends ConsumerStatefulWidget {
+  final PaginatedListProvider<T, N> listProvider;
   final String title;
   final String searchHintText;
   final Widget Function(
     BuildContext context,
     PaginatedListState<T> state,
-    PaginatedListViewModel<T> viewModel,
+    N viewModel,
   )?
   filterBuilder;
   final List<Widget> Function(
@@ -31,11 +32,12 @@ class PaginatedListPage<T> extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<PaginatedListPage<T>> createState() =>
-      _PaginatedListPageState<T>();
+  ConsumerState<PaginatedListPage<T, N>> createState() =>
+      _PaginatedListPageState<T, N>();
 }
 
-class _PaginatedListPageState<T> extends ConsumerState<PaginatedListPage<T>> {
+class _PaginatedListPageState<T, N extends PaginatedListNotifier<T>>
+    extends ConsumerState<PaginatedListPage<T, N>> {
   final ScrollController _scrollController = ScrollController();
   bool _didRequestInitialLoad = false;
 
@@ -92,7 +94,7 @@ class _PaginatedListPageState<T> extends ConsumerState<PaginatedListPage<T>> {
             curve: Curves.easeInOut,
           );
         },
-        child: Icon(Icons.arrow_upward),
+        child: const Icon(Icons.arrow_upward),
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jarboss_challenge/core/core.dart';
 
@@ -8,18 +9,41 @@ class _TestItem {
   const _TestItem(this.id);
 }
 
+class _TestPaginatedListNotifier extends PaginatedListNotifier<_TestItem> {
+  @override
+  AddPaginatedItemsByPageUseCase<_TestItem> get useCase =>
+      ref.read(_testUseCaseProvider);
+}
+
+final _testUseCaseProvider = Provider<AddPaginatedItemsByPageUseCase<_TestItem>>(
+  (ref) => throw UnimplementedError('Override in tests'),
+);
+
+final _testListProvider =
+    NotifierProvider<_TestPaginatedListNotifier, PaginatedListState<_TestItem>>(
+      _TestPaginatedListNotifier.new,
+    );
+
 void main() {
-  PaginatedListViewModel<_TestItem> buildViewModel({
+  late ProviderContainer container;
+
+  ProviderContainer buildContainer({
     required PaginatedPageFetcher<_TestItem> fetchPage,
   }) {
-    return PaginatedListViewModel(
-      useCase: AddPaginatedItemsByPageUseCase(fetchPage: fetchPage),
+    return ProviderContainer(
+      overrides: [
+        _testUseCaseProvider.overrideWithValue(
+          AddPaginatedItemsByPageUseCase(fetchPage: fetchPage),
+        ),
+      ],
     );
   }
 
-  group('PaginatedListViewModel', () {
+  tearDown(() => container.dispose());
+
+  group('PaginatedListNotifier', () {
     test('refresh transitions from initial to success with items', () async {
-      final viewModel = buildViewModel(
+      container = buildContainer(
         fetchPage: ({required page, name, filterValue}) async => Right(
           paginatedEntity(
             count: 2,
@@ -29,29 +53,32 @@ void main() {
         ),
       );
 
-      expect(viewModel.state.status, FetchStatus.initial);
+      final notifier = container.read(_testListProvider.notifier);
+      expect(container.read(_testListProvider).status, FetchStatus.initial);
 
-      await viewModel.refresh();
+      await notifier.refresh();
 
-      expect(viewModel.state.status, FetchStatus.success);
-      expect(viewModel.state.items, hasLength(2));
-      expect(viewModel.state.isLastPage, isTrue);
+      final state = container.read(_testListProvider);
+      expect(state.status, FetchStatus.success);
+      expect(state.items, hasLength(2));
+      expect(state.isLastPage, isTrue);
     });
 
     test('refresh sets empty status when API returns no items', () async {
-      final viewModel = buildViewModel(
+      container = buildContainer(
         fetchPage: ({required page, name, filterValue}) async =>
             Right(paginatedEntity(count: 0, next: null, results: const [])),
       );
 
-      await viewModel.refresh();
+      await container.read(_testListProvider.notifier).refresh();
 
-      expect(viewModel.state.status, FetchStatus.empty);
-      expect(viewModel.state.items, isEmpty);
+      final state = container.read(_testListProvider);
+      expect(state.status, FetchStatus.empty);
+      expect(state.items, isEmpty);
     });
 
     test('refresh sets error status when use case fails', () async {
-      final viewModel = buildViewModel(
+      container = buildContainer(
         fetchPage: ({required page, name, filterValue}) async => Left(
           ApiException(
             type: ApiErrorType.network,
@@ -60,16 +87,17 @@ void main() {
         ),
       );
 
-      await viewModel.refresh();
+      await container.read(_testListProvider.notifier).refresh();
 
-      expect(viewModel.state.status, FetchStatus.error);
-      expect(viewModel.state.error, isNotNull);
-      expect(viewModel.state.items, isEmpty);
+      final state = container.read(_testListProvider);
+      expect(state.status, FetchStatus.error);
+      expect(state.error, isNotNull);
+      expect(state.items, isEmpty);
     });
 
     test('fetchMore appends next page and marks last page', () async {
       var callCount = 0;
-      final viewModel = buildViewModel(
+      container = buildContainer(
         fetchPage: ({required page, name, filterValue}) async {
           callCount++;
           if (page == 1) {
@@ -91,18 +119,20 @@ void main() {
         },
       );
 
-      await viewModel.refresh();
-      await viewModel.fetchMore();
+      final notifier = container.read(_testListProvider.notifier);
+      await notifier.refresh();
+      await notifier.fetchMore();
 
+      final state = container.read(_testListProvider);
       expect(callCount, 2);
-      expect(viewModel.state.items, hasLength(2));
-      expect(viewModel.state.isLastPage, isTrue);
-      expect(viewModel.state.status, FetchStatus.success);
+      expect(state.items, hasLength(2));
+      expect(state.isLastPage, isTrue);
+      expect(state.status, FetchStatus.success);
     });
 
     test('fetchMore does nothing when already on last page', () async {
       var callCount = 0;
-      final viewModel = buildViewModel(
+      container = buildContainer(
         fetchPage: ({required page, name, filterValue}) async {
           callCount++;
           return Right(
@@ -115,15 +145,16 @@ void main() {
         },
       );
 
-      await viewModel.refresh();
-      await viewModel.fetchMore();
+      final notifier = container.read(_testListProvider.notifier);
+      await notifier.refresh();
+      await notifier.fetchMore();
 
       expect(callCount, 1);
     });
 
     test('searchByName resets list and forwards query to use case', () async {
       String? capturedName;
-      final viewModel = buildViewModel(
+      container = buildContainer(
         fetchPage: ({required page, name, filterValue}) async {
           capturedName = name;
           return Right(
@@ -136,17 +167,19 @@ void main() {
         },
       );
 
-      await viewModel.refresh();
-      await viewModel.searchByName('Rick');
+      final notifier = container.read(_testListProvider.notifier);
+      await notifier.refresh();
+      await notifier.searchByName('Rick');
 
+      final state = container.read(_testListProvider);
       expect(capturedName, 'Rick');
-      expect(viewModel.state.searchQuery, 'Rick');
-      expect(viewModel.state.items, hasLength(1));
+      expect(state.searchQuery, 'Rick');
+      expect(state.items, hasLength(1));
     });
 
     test('filterByValue resets list and forwards filter to use case', () async {
       String? capturedFilter;
-      final viewModel = buildViewModel(
+      container = buildContainer(
         fetchPage: ({required page, name, filterValue}) async {
           capturedFilter = filterValue;
           return Right(
@@ -159,17 +192,19 @@ void main() {
         },
       );
 
-      await viewModel.refresh();
-      await viewModel.filterByValue('dead');
+      final notifier = container.read(_testListProvider.notifier);
+      await notifier.refresh();
+      await notifier.filterByValue('dead');
 
+      final state = container.read(_testListProvider);
       expect(capturedFilter, 'dead');
-      expect(viewModel.state.filterValue, 'dead');
-      expect(viewModel.state.items, hasLength(1));
+      expect(state.filterValue, 'dead');
+      expect(state.items, hasLength(1));
     });
 
     test('keeps loaded items and surfaces error on pagination failure', () async {
       var callCount = 0;
-      final viewModel = buildViewModel(
+      container = buildContainer(
         fetchPage: ({required page, name, filterValue}) async {
           callCount++;
           if (page == 1) {
@@ -190,13 +225,15 @@ void main() {
         },
       );
 
-      await viewModel.refresh();
-      await viewModel.fetchMore();
+      final notifier = container.read(_testListProvider.notifier);
+      await notifier.refresh();
+      await notifier.fetchMore();
 
+      final state = container.read(_testListProvider);
       expect(callCount, 2);
-      expect(viewModel.state.status, FetchStatus.success);
-      expect(viewModel.state.items, hasLength(1));
-      expect(viewModel.state.error, isNotNull);
+      expect(state.status, FetchStatus.success);
+      expect(state.items, hasLength(1));
+      expect(state.error, isNotNull);
     });
   });
 }

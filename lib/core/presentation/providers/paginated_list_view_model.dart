@@ -1,13 +1,14 @@
 import 'package:jarboss_challenge/core/core.dart';
 
-class PaginatedListViewModel<TEntity>
-    extends StateNotifier<PaginatedListState<TEntity>> {
-  final AddPaginatedItemsByPageUseCase<TEntity> useCase;
+/// Base [Notifier] for paginated lists. Subclasses supply [useCase] via [ref].
+abstract class PaginatedListNotifier<TEntity>
+    extends Notifier<PaginatedListState<TEntity>> {
+  AddPaginatedItemsByPageUseCase<TEntity> get useCase;
 
   bool _paginationLocked = false;
 
-  PaginatedListViewModel({required this.useCase})
-    : super(PaginatedListState<TEntity>());
+  @override
+  PaginatedListState<TEntity> build() => PaginatedListState<TEntity>();
 
   bool get _isLoading =>
       state.status == FetchStatus.fetching ||

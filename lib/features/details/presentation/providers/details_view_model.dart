@@ -4,19 +4,16 @@ import 'package:jarboss_challenge/features/details/presentation/providers/detail
 import '../../../../core/core.dart';
 
 final detailsViewModelProvider =
-    StateNotifierProvider<DetailsViewModel, DetailsState>(
-      (ref) => DetailsViewModel(
-        getCharacterDetailsUseCase: ref.read(
-          getCharacterDetailsUseCaseProvider,
-        ),
-      ),
-    );
+    NotifierProvider<DetailsViewModel, DetailsState>(DetailsViewModel.new);
 
-class DetailsViewModel extends StateNotifier<DetailsState> {
-  final GetCharacterDetailsUseCase getCharacterDetailsUseCase;
+class DetailsViewModel extends Notifier<DetailsState> {
+  late final GetCharacterDetailsUseCase _getCharacterDetailsUseCase;
 
-  DetailsViewModel({required this.getCharacterDetailsUseCase})
-    : super(const DetailsState());
+  @override
+  DetailsState build() {
+    _getCharacterDetailsUseCase = ref.read(getCharacterDetailsUseCaseProvider);
+    return const DetailsState();
+  }
 
   void clear() {
     state = const DetailsState();
@@ -24,7 +21,7 @@ class DetailsViewModel extends StateNotifier<DetailsState> {
 
   Future<void> getCharacterDetails({String? characterId}) async {
     state = const DetailsState(status: FetchStatus.fetching);
-    final result = await getCharacterDetailsUseCase(characterId);
+    final result = await _getCharacterDetailsUseCase(characterId);
     result.fold(
       (error) => state = state.copyWith(
         status: FetchStatus.error,

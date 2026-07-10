@@ -11,7 +11,7 @@ class EpisodesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PaginatedListPage<EpisodeEntity>(
+    return PaginatedListPage<EpisodeEntity, EpisodesListNotifier>(
       listProvider: episodesViewModelProvider,
       title: 'Episodios',
       searchHintText: 'Buscar episodio...',
