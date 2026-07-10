@@ -42,7 +42,7 @@ Flutter app for the **technical challenge (Project 1)**: browse Rick & Morty cha
 
 | Layer | Choice |
 |-------|--------|
-| State | Riverpod (`StateNotifier`) |
+| State | Riverpod 3 (`Notifier`) |
 | Navigation | go_router (`StatefulShellRoute`) |
 | HTTP | Dio (`packages/api_client`) |
 | Functional errors | dartz `Either` |
@@ -145,8 +145,37 @@ Current coverage:
 
 - Repository implementation (success + error paths)
 - `AddPaginatedItemsByPageUseCase` (merge pages, filters, last page)
-- `PaginatedListViewModel` (refresh, fetchMore, search, partial errors)
+- `PaginatedListNotifier` (refresh, fetchMore, search, partial errors)
 - `CharactersPage` widget (loaded grid, empty state)
+
+---
+
+## Releases (APK)
+
+Release builds use the **Android debug keystore** (no flavors, no production signing). The APK is published automatically to [GitHub Releases](https://github.com/ergo-notch/jarboss_challenge/releases) when you **push to `main`**.
+
+Each push creates a release tagged `main-<run_number>` (e.g. `main-42`).
+
+### Automatic (on push to main)
+
+```bash
+git push origin main
+```
+
+### Manual trigger
+
+1. Go to **Actions** → **Build and Release APK** → **Run workflow**
+2. Optionally set a custom tag; leave empty to use `main-<run_number>`
+3. Download the APK from **Releases** once the job completes
+
+### Build locally
+
+```bash
+flutter build apk --release --dart-define-from-file=config.json
+# Output: build/app/outputs/flutter-apk/app-release.apk
+```
+
+> **Note:** Replace the default `dart.yml` workflow on GitHub if you created it from the template — that template targets Dart packages, not Flutter apps. Use `.github/workflows/release-apk.yml` instead.
 
 ---
 
